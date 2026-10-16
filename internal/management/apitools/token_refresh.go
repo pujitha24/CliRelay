@@ -108,7 +108,8 @@ func (s *Service) refreshXAIOAuthAccessToken(ctx context.Context, auth *coreauth
 	if cfg == nil {
 		cfg = &config.Config{}
 	}
-	svc := xaiauth.NewXAIAuthWithProxyURL(cfg, auth.ProxyURL)
+	proxyURL := cfg.ResolveProxyURL(auth.ProxyID, auth.ProxyURL)
+	svc := xaiauth.NewXAIAuthWithProxyURL(cfg, proxyURL)
 	tokenData, errRefresh := svc.RefreshTokens(ctx, refreshToken, tokenEndpoint)
 	if errRefresh != nil {
 		return "", errRefresh
