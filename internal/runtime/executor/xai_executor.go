@@ -483,7 +483,9 @@ func applyXAIChatHeaders(r *http.Request, cfg *config.Config, auth *cliproxyauth
 		return
 	}
 	r.Header.Set(xaiTokenAuthHeader, xaiTokenAuthValue)
-	r.Header.Set("X-Grok-Client-Version", config.DefaultXAIFingerprintClientVersion)
+	if strings.TrimSpace(r.Header.Get("X-Grok-Client-Version")) == "" {
+		r.Header.Set("X-Grok-Client-Version", config.DefaultXAIFingerprintClientVersion)
+	}
 }
 
 func xaiMetadataString(meta map[string]any, key string) string {

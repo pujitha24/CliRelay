@@ -91,6 +91,24 @@ func TestApplyXAIChatHeaders(t *testing.T) {
 		}
 	})
 
+	t.Run("configured fingerprint client version is not overwritten", func(t *testing.T) {
+		initIdentityFingerprintRuntimeDB(t)
+		req := httptest.NewRequest(http.MethodPost, xaiauth.CLIChatProxyBaseURL+"/responses", nil)
+		auth := &cliproxyauth.Auth{Attributes: map[string]string{
+			"auth_kind": "oauth",
+			"base_url":  xaiauth.DefaultAPIBaseURL,
+		}}
+		cfg := &config.Config{}
+		cfg.IdentityFingerprint.XAI.Enabled = true
+		cfg.IdentityFingerprint.XAI.ClientVersion = "9.9.9"
+
+		applyXAIChatHeaders(req, cfg, auth, "oauth-token", true)
+
+		if got := req.Header.Get("X-Grok-Client-Version"); got != "9.9.9" {
+			t.Fatalf("X-Grok-Client-Version = %q, want configured 9.9.9", got)
+		}
+	})
+
 	t.Run("api endpoint omits cli identity headers", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, xaiauth.DefaultAPIBaseURL+"/responses", nil)
 		auth := &cliproxyauth.Auth{Attributes: map[string]string{
