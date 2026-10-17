@@ -262,3 +262,25 @@ func TestConvertClaudeResponseToOpenAIResponses_DoneEventsCarryBlockText(t *test
 		})
 	}
 }
+
+func TestConvertClaudeResponseToOpenAIResponses_TextDeltaUsesBlockIndex(t *testing.T) {
+	lines := claudeStreamLines(t, []claudeStreamBlock{
+		{kind: "thinking", chunks: []string{"hmm"}},
+		{kind: "text", chunks: []string{"Hel", "lo"}},
+	}, "end_turn")
+	events := convertClaudeStream(t, lines)
+
+	deltas := 0
+	for _, ev := range events {
+		if ev.name != "response.output_text.delta" {
+			continue
+		}
+		deltas++
+		if got := ev.data.Get("output_index").Int(); got != 1 {
+			t.Errorf("output_text.delta output_index = %d, want the message item's 1", got)
+		}
+	}
+	if deltas != 2 {
+		t.Fatalf("got %d output_text.delta events, want 2", deltas)
+	}
+}
